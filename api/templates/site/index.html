@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row mt-3">
+        <div class="col-12">
+            <h1 class="h1-responsive">{% block title %}Restaurants{% endblock %}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 d-flex justify-content-end">
+            <a class="btn btn-outline-primary waves-effect" href="{{ url_for('api.create') }}">New</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <table id="restaurantes" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="th-sm">Name</th>
+                        <th class="th-sm">Site</th>
+                        <th class="th-sm">Rating</th>
+                        <th class="th-sm">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Custom script -->
+<script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}
