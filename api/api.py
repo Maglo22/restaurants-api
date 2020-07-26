@@ -1,4 +1,3 @@
-import functools
 from os import name
 from sqlite3.dbapi2 import Statement
 
@@ -7,6 +6,7 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 from api.db import get_db
+import uuid
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -27,19 +27,19 @@ def get_restaurants():
 
 
 # add a new restaurant to db
-@bp.route('/restaurants/add', methods=['POST'])
+@bp.route('/restaurants/create', methods=['POST'])
 def create():
-    name = request.args['name']
-    phone = request.args['phone']
-    email = request.args['email']
-    city = request.args['city']
-    state = request.args['state']
-    street = request.args['street']
-    site = request.args['site']
-    lat = request.args['lat']
-    lng = request.args['lang']
+    name = request.json['name']
+    phone = request.json['phone']
+    email = request.json['email']
+    city = request.json['city']
+    state = request.json['state']
+    street = request.json['street']
+    site = request.json['site']
+    lat = request.json['lat']
+    lng = request.json['lng']
 
-    id = 'something random'
+    id = uuid.uuid1()
     rating = 0
 
     db = get_db()
@@ -48,11 +48,16 @@ def create():
         insert into restaurant(id, rating, name, site, email, phone, street, city, state, lat, lng)
         values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         """,
-        (id, rating, name, site, email, phone, street, city, state, lat, lng)
+        (str(id), rating, name, site, email, phone, street, city, state, lat, lng)
     )
     db.commit()
 
-    return 'Restaurant added.'
+    response = {
+        'status': 'success',
+        'message': 'Restaurant added.'
+    }
+
+    return jsonify(response)
 
 
 # check if restaurant exists
@@ -72,23 +77,33 @@ def get_restaurant(id):
 # update restaurant in db
 @bp.route('restaurants/update', methods=['POST'])
 def update():
-    if 'id' not in request.args:
-        return 'No id specified.'
+    if 'id' not in request.json:
+        response = {
+            'status': 'error',
+            'message': 'No id specified.'
+        }
 
-    restaurant = get_restaurant(request.args['id'])
+        return jsonify(response)
+
+    restaurant = get_restaurant(request.json['id'])
 
     if restaurant is None:
-        return 'Restaurant not found.'
+        response = {
+            'status': 'error',
+            'message': 'Restaurant not found.'
+        }
 
-    name = request.args['name']
-    phone = request.args['phone']
-    email = request.args['email']
-    city = request.args['city']
-    state = request.args['state']
-    street = request.args['street']
-    site = request.args['site']
-    lat = request.args['lat']
-    lng = request.args['lang']
+        return jsonify(response)
+
+    name = request.json['name']
+    phone = request.json['phone']
+    email = request.json['email']
+    city = request.json['city']
+    state = request.json['state']
+    street = request.json['street']
+    site = request.json['site']
+    lat = request.json['lat']
+    lng = request.json['lng']
 
     db = get_db()
     db.execute(
@@ -97,26 +112,46 @@ def update():
         city = ?, state = ?, street = ?, site = ?, lat = ?, lng = ?
         where id = ?
         """,
-        (name, phone, email, phone, city, state, street, site, lat, lng, id)
+        (name, phone, email, phone, city, state, street, site, lat, lng, request.json['id'])
     )
     db.commit()
 
-    return 'Restaurant updated.'
+    response = {
+        'status': 'success',
+        'message': 'Restaurant updated.'
+    }
+
+    return jsonify(response)
 
 
 # delete restaurant from db
 @bp.route('/restaurants/delete', methods=['POST'])
 def delete():
-    if 'id' not in request.args:
-        return 'No id specified.'
+    if 'id' not in request.json:
+        response = {
+            'status': 'error',
+            'message': 'No id specified.'
+        }
 
-    restaurant = get_restaurant(request.args['id'])
+        return jsonify(response)
+
+    restaurant = get_restaurant(request.json['id'])
 
     if restaurant is None:
-        return 'Restaurant not found.'
+        response = {
+            'status': 'error',
+            'message': 'Restaurant not found.'
+        }
+
+        return jsonify(response)
 
     db = get_db()
-    db.execute('DELETE FROM restaurant WHERE id = ?', (request.args['id']))
+    db.execute('DELETE FROM restaurant WHERE id = ?', (request.json['id']))
     db.commit()
 
-    return 'Restaurant deleted.'
+    response = {
+        'status': 'success',
+        'message': 'Restaurant deleted.'
+    }
+
+    return jsonify(response)
